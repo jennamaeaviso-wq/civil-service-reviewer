@@ -50,7 +50,7 @@
 
 ```
 <!-- Replace this URL with your deployed Apps Script URL -->
-<a href="PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"
+<a href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec"
    target="_blank" rel="noopener noreferrer">
   Open My Reviewer
 </a>
