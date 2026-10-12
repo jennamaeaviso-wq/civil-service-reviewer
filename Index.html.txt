@@ -1,1 +1,63 @@
+<!DOCTYPE html>
 
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#52796f">
+  <title>Civil Service Reviewer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: #f7f5ef;
+      color: #354f52;
+    }
+    main {
+      width: 100%;
+      max-width: 480px;
+      padding: 32px 24px;
+      text-align: center;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px #354f5215;
+    }
+    h1 { color: #52796f; }
+    p { line-height: 1.7; }
+    a {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 14px 22px;
+      background: #52796f;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+    a:hover { background: #354f52; }
+    small { display: block; margin-top: 24px; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Civil Service Reviewer</h1>
+    <p>Prepare for your Civil Service Examination with your personal reviewer, practice questions, mock exams, and vocabulary tools.</p>
+
+```
+<!-- Replace this URL with your deployed Apps Script URL -->
+<a href="PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE"
+   target="_blank" rel="noopener noreferrer">
+  Open My Reviewer
+</a>
+
+<small>Personal study tool · Study at your own pace</small>
+```
+
+  </main>
+</body>
+</html>
