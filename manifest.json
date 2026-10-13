@@ -1,8 +1,8 @@
 
 {
   "id": "/civil-service-reviewer/",
-  "name": "Civil Service Reviewer",
-  "short_name": "CSR Reviewer",
+  "name": "Civil Service Examination Reviewer",
+  "short_name": "CSE Reviewer",
   "description": "Civil Service Examination Reviewer",
   "start_url": "/civil-service-reviewer/",
   "scope": "/civil-service-reviewer/",
