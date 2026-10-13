@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0645AD">
+  <meta name="theme-color" content="#163b70">
   <meta name="description" content="Civil Service Reviewer study app">
   <title>Civil Service Reviewer</title>
 
@@ -13,17 +13,19 @@
   <link rel="apple-touch-icon" href="./icon-192.png">
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
       font-family: Arial, sans-serif;
       background: #eef3f9;
       color: #183153;
+      display: grid;
+      place-items: center;
+      padding: 24px;
     }
 
     main {
@@ -37,14 +39,21 @@
     }
 
     .logo {
-      width: 96px;
-      height: 96px;
-      margin-bottom: 12px;
+      width: 112px;
+      height: 112px;
       object-fit: contain;
+      margin-bottom: 12px;
     }
 
-    h1 { font-size: 25px; margin: 8px 0; }
-    p { line-height: 1.6; color: #58677b; }
+    h1 {
+      font-size: 25px;
+      margin: 8px 0 16px;
+    }
+
+    p {
+      line-height: 1.6;
+      color: #58677b;
+    }
 
     a, button {
       display: block;
@@ -60,30 +69,40 @@
     }
 
     .open {
-      background: #0645AD;
+      background: #163b70;
       color: white;
     }
 
     .install {
       background: #e4edf9;
-      color: #0645AD;
+      color: #163b70;
     }
 
-    #status { font-size: 13px; }
+    #status {
+      font-size: 13px;
+    }
   </style>
 </head>
 
 <body>
   <main>
-    <img class="logo"
-         src="./icon-512.png"
-         alt="Civil Service Reviewer icon">
+    <img
+      class="logo"
+      src="./icon-192.png"
+      alt="Civil Service Reviewer icon"
+    >
 
     <h1>Civil Service Reviewer</h1>
-    <p>Prepare for your Civil Service Examination anytime using your phone or tablet.</p>
 
-    <a class="open"
-       href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec">
+    <p>
+      Prepare for your Civil Service Examination anytime
+      using your phone or tablet.
+    </p>
+
+    <a
+      class="open"
+      href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec"
+    >
       Open Reviewer
     </a>
 
@@ -91,14 +110,18 @@
       Install App
     </button>
 
-    <p id="status">You can install this app from your browser menu.</p>
+    <p id="status">
+      Open the reviewer using the button above.
+    </p>
   </main>
 
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./service-worker.js")
-          .catch(err => console.error("Service worker:", err));
+          .catch(error => console.error(
+            "Service worker registration failed:", error
+          ));
       });
     }
 
@@ -117,12 +140,13 @@
     installButton.addEventListener("click", async () => {
       if (!installPrompt) {
         status.textContent =
-          "Please use Chrome menu and choose Install app.";
+          "Use Chrome menu and select Install app if available.";
         return;
       }
 
       installPrompt.prompt();
       await installPrompt.userChoice;
+
       installPrompt = null;
       installButton.hidden = true;
     });
