@@ -3,17 +3,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0;url=https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#163b70">
+  <meta name="description" content="Civil Service Reviewer study app">
   <title>Civil Service Reviewer</title>
-  <script>
-    window.location.replace("https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec");
-  </script>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: #eef3f9;
+      color: #183153;
+    }
+    main {
+      width: 100%;
+      max-width: 420px;
+      padding: 32px 24px;
+      text-align: center;
+      background: white;
+      border-radius: 22px;
+      box-shadow: 0 8px 30px #163b7018;
+    }
+    .logo {
+      width: 96px;
+      height: 96px;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: 25px; margin: 8px 0; }
+    p { line-height: 1.6; color: #58677b; }
+    a, button {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin-top: 14px;
+      border: 0;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .open {
+      background: #163b70;
+      color: white;
+    }
+    .install {
+      background: #e4edf9;
+      color: #163b70;
+    }
+    #status { font-size: 13px; }
+  </style>
 </head>
 <body>
-  <p>Opening Civil Service Reviewer...</p>
-  <p>If the app does not open automatically,
-    <a href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec">click here</a>.
-  </p>
+  <main>
+    <img class="logo" src="./icon.svg" alt="Civil Service Reviewer icon">
+    <h1>Civil Service Reviewer</h1>
+    <p>Prepare for your Civil Service Examination anytime using your phone or tablet.</p>
+
+    <a class="open"
+       href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec">
+      Open Reviewer
+    </a>
+
+    <button id="install" class="install" hidden>
+      Install App
+    </button>
+
+    <p id="status">You can install this app from your browser menu.</p>
+  </main>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+          .catch(err => console.error("Service worker:", err));
+      });
+    }
+
+    let installPrompt;
+    const installButton = document.getElementById("install");
+    const status = document.getElementById("status");
+
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      installPrompt = event;
+      installButton.hidden = false;
+      status.textContent = "Your app is ready to install.";
+    });
+
+    installButton.addEventListener("click", async () => {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt = null;
+      installButton.hidden = true;
+    });
+
+    window.addEventListener("appinstalled", () => {
+      installButton.hidden = true;
+      status.textContent = "App installed successfully.";
+    });
+  </script>
 </body>
 </html>
