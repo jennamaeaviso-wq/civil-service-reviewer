@@ -1,87 +1,437 @@
-```html
 <!DOCTYPE html>
-<html lang="en">
+
+<html>
+
 <head>
-  <meta charset="UTF-8">
+
+  <base target="_top">
+
+  <meta charset="utf-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#52796f">
+
   <title>Civil Service Reviewer</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      font-family: Arial, sans-serif;
-      background: #f7f5ef;
-      color: #354f52;
-    }
+    :root{--green:#52796f;--green2:#84a98c;--pale:#ddead7;--cream:#faf9f4;--ink:#26332e;--muted:#718078;--line:#e1e8e0;--white:#fff;--red:#a64242}
 
-    main {
-      width: 100%;
-      max-width: 480px;
-      padding: 32px 24px;
-      text-align: center;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 30px #354f5215;
-    }
+    *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Quicksand,Arial,sans-serif}
 
-    h1 {
-      color: #52796f;
-    }
+    button,input,select,textarea{font:inherit}button{cursor:pointer}
 
-    p {
-      line-height: 1.7;
-    }
+    .app{display:flex;min-height:100vh}.sidebar{width:230px;background:#fff;border-right:1px solid var(--line);padding:22px 14px;flex-shrink:0}
 
-    a {
-      display: inline-block;
-      margin-top: 16px;
-      padding: 14px 22px;
-      background: #52796f;
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: bold;
-    }
+    .brand{font-weight:700;color:var(--green);font-size:19px;line-height:1.3;padding:0 10px 22px}.brand small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:5px}
 
-    a:hover {
-      background: #354f52;
-    }
+    .nav{display:grid;gap:6px}.nav button{border:0;background:transparent;text-align:left;padding:12px;border-radius:12px;color:#53645b;font-weight:700;display:flex;gap:10px;align-items:center}
 
-    small {
-      display: block;
-      margin-top: 24px;
-      color: #6b7280;
-    }
+    .nav button.active,.nav button:hover{background:var(--pale);color:var(--green)}.main{flex:1;min-width:0;padding:25px;max-width:1500px;margin:0 auto;width:100%}
+
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}.top h1{font-size:26px;margin:0}.muted{color:var(--muted)}.small{font-size:12px}
+
+    .page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+    .card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:18px;margin-bottom:14px;min-width:0}.card h2,.card h3{margin:0 0 12px}.stat{font-size:28px;font-weight:700;color:var(--green);margin-top:8px}
+
+    .btn{border:0;background:var(--green);color:white;border-radius:10px;padding:10px 14px;font-weight:700}.btn.secondary{background:var(--pale);color:var(--green)}.btn.danger{background:#f7e7e4;color:var(--red)}.btn:disabled{opacity:.5;cursor:not-allowed}
+
+    .actions{display:flex;flex-wrap:wrap;gap:8px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{font-size:12px;font-weight:700;color:#596a60}
+
+    input,select,textarea{border:1px solid #d9e2d9;border-radius:10px;padding:10px 11px;background:white;color:var(--ink);width:100%;min-width:0}textarea{min-height:115px;resize:vertical}
+
+    .row{display:flex;gap:10px}.row>*{flex:1;min-width:0}.list{display:grid;gap:10px}.item{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fff}.item-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.item h3{margin:0 0 5px;font-size:15px}.pill{font-size:11px;font-weight:700;background:var(--pale);color:var(--green);border-radius:999px;padding:5px 8px;white-space:nowrap}
+
+    .empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed #cbd8cc;border-radius:12px}.notice{padding:11px 13px;border-radius:10px;background:#eef5ec;margin:10px 0;color:var(--green);white-space:pre-wrap}.error{background:#fff0ed;color:var(--red)}
+
+    .question{padding:15px;border:1px solid var(--line);border-radius:14px;margin:12px 0;background:white}.option{display:flex;gap:9px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px;margin:7px 0;cursor:pointer}.option input{width:auto;margin-top:3px}.option.correct{border-color:#6b9c7b;background:#eef8ef}.option.wrong{border-color:#cb7770;background:#fff0ed}
+
+    .answer-explain{background:#f2f7ef;border-radius:10px;padding:12px;margin-top:10px;white-space:pre-wrap}.hidden{display:none!important}.timer{font-size:20px;font-weight:700;color:var(--green)}.footer{margin-top:30px;text-align:center;color:var(--muted);font-size:12px}
+
+    @media(max-width:800px){.app{display:block}.sidebar{width:100%;padding:12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:5px 8px 12px}.nav{display:flex;overflow-x:auto;padding-bottom:3px}.nav button{white-space:nowrap;padding:10px}.main{padding:16px}.grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.top h1{font-size:22px}}
+
+    @media(max-width:480px){.grid{grid-template-columns:1fr}.row{display:block}.row>*{margin-bottom:8px}.card{padding:14px}.top{align-items:flex-start}}
+
   </style>
+
 </head>
 
 <body>
-  <main>
-    <h1>Civil Service Reviewer</h1>
 
-    <p>
-      Prepare for your Civil Service Examination with your
-      personal reviewer, practice questions, mock exams,
-      and vocabulary tools.
-    </p>
+<div class="app">
 
-    <a href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec"
-       target="_blank"
-       rel="noopener noreferrer">
-      Open My Reviewer
-    </a>
+  <aside class="sidebar">
 
-    <small>Personal study tool · Study at your own pace</small>
+    <div class="brand">Civil Service Reviewer<small>Study smarter, one topic at a time</small></div>
+
+    <nav class="nav" id="nav">
+
+      <button class="active" data-page="dashboard">▦ Dashboard</button>
+
+      <button data-page="reviewers">▤ My Reviewers</button>
+
+      <button data-page="upload">⇧ Upload & Scan</button>
+
+      <button data-page="quiz">☑ Practice Quiz</button>
+
+      <button data-page="mock">◷ Mock Exam</button>
+
+      <button data-page="dictionary">Aa Dictionary</button>
+
+      <button data-page="progress">↗ My Progress</button>
+
+      <button data-page="saved">☆ Saved Questions</button>
+
+    </nav>
+
+  </aside>
+
+  <main class="main">
+
+    <div class="top"><div><h1 id="pageTitle">Dashboard</h1><div class="muted small">Your personal Civil Service exam study space</div></div><button class="btn secondary" onclick="refreshData()">↻ Refresh</button></div>
+
+    <div id="globalNotice" class="notice hidden"></div>
+
+
+
+    <section class="page active" id="page-dashboard">
+
+      <div class="grid">
+
+        <div class="card"><div class="muted">Saved reviewers</div><div class="stat" id="statMaterials">0</div></div>
+
+        <div class="card"><div class="muted">Question bank</div><div class="stat" id="statQuestions">0</div></div>
+
+        <div class="card"><div class="muted">Mock / quiz attempts</div><div class="stat" id="statAttempts">0</div></div>
+
+      </div>
+
+      <div class="card"><h2>Continue studying</h2><div class="actions"><button class="btn" onclick="showPage('upload')">＋ Upload material</button><button class="btn secondary" onclick="showPage('quiz')">Start practice quiz</button><button class="btn secondary" onclick="showPage('mock')">Take mock exam</button></div></div>
+
+      <div class="card"><h2>Study subjects</h2><div class="grid">
+
+        <div class="item"><h3>Verbal Ability</h3><div class="muted small">Vocabulary, grammar, reading comprehension</div></div>
+
+        <div class="item"><h3>Numerical Ability</h3><div class="muted small">Arithmetic, percentages, ratios, word problems</div></div>
+
+        <div class="item"><h3>Analytical Ability</h3><div class="muted small">Logic, patterns, assumptions, conclusions</div></div>
+
+        <div class="item"><h3>General Information</h3><div class="muted small">Constitution, ethics, human rights, environment</div></div>
+
+        <div class="item"><h3>Clerical Operations</h3><div class="muted small">Filing, spelling, office procedures</div></div>
+
+        <div class="item"><h3>My Uploaded Topics</h3><div class="muted small">Organized from your own study files</div></div>
+
+      </div></div>
+
+      <div class="card"><h2>Recent attempts</h2><div id="recentAttempts" class="list"></div></div>
+
+    </section>
+
+
+
+    <section class="page" id="page-upload">
+
+      <div class="card"><h2>Upload & scan study material</h2><p class="muted small">Supported: images/screenshots, PDF, Word documents, and text files. OCR works only after Drive API is enabled in Apps Script.</p>
+
+        <form id="uploadForm">
+
+          <div class="field"><label>Choose file</label><input id="uploadFile" type="file" accept="image/*,.pdf,.doc,.docx,.txt" required></div>
+
+          <div class="row"><div class="field"><label>Title</label><input id="uploadTitle" placeholder="e.g. Synonyms and Antonyms"></div><div class="field"><label>Subject</label><select id="uploadSubject"><option>Verbal Ability</option><option>Numerical Ability</option><option>Analytical Ability</option><option>General Information</option><option>Clerical Operations</option><option>Other</option></select></div></div>
+
+          <div class="field"><label>Topic (optional)</label><input id="uploadTopic" placeholder="e.g. Vocabulary"></div>
+
+          <button class="btn" type="submit" id="uploadBtn">Upload and scan</button>
+
+        </form>
+
+        <div id="uploadStatus"></div>
+
+      </div>
+
+      <div class="card"><h2>Manual text entry</h2><p class="muted small">Use this if OCR is unclear or you want to paste text from your notes.</p>
+
+        <div class="field"><label>Title</label><input id="manualTitle" placeholder="Reviewer title"></div>
+
+        <div class="row"><div class="field"><label>Subject</label><select id="manualSubject"><option>Verbal Ability</option><option>Numerical Ability</option><option>Analytical Ability</option><option>General Information</option><option>Clerical Operations</option><option>Other</option></select></div><div class="field"><label>Topic</label><input id="manualTopic" placeholder="Topic"></div></div>
+
+        <div class="field"><label>Reviewer text</label><textarea id="manualText" placeholder="Paste or type your study notes here..."></textarea></div>
+
+        <button class="btn" onclick="saveManualMaterial()">Save reviewer</button>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="page" id="page-reviewers">
+
+      <div class="card"><div class="item-head"><div><h2>My Reviewers</h2><div class="muted small">Open a material to edit its extracted text or generate questions.</div></div><button class="btn" onclick="showPage('upload')">＋ Add</button></div><div id="materialsList" class="list"></div></div>
+
+      <div class="card hidden" id="materialEditor"><h2>Edit reviewer</h2><input type="hidden" id="editMaterialId">
+
+        <div class="field"><label>Title</label><input id="editMaterialTitle"></div><div class="row"><div class="field"><label>Subject</label><input id="editMaterialSubject"></div><div class="field"><label>Topic</label><input id="editMaterialTopic"></div></div>
+
+        <div class="field"><label>Extracted / editable text</label><textarea id="editMaterialText" style="min-height:240px"></textarea></div>
+
+        <div class="actions"><button class="btn" onclick="saveMaterialEdit()">Save changes</button><button class="btn secondary" onclick="generateForMaterial()">Generate questions</button><button class="btn danger" onclick="removeMaterial()">Delete material</button></div><div id="generateStatus"></div>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="page" id="page-quiz">
+
+      <div class="card"><h2>Practice quiz</h2><div class="row"><div class="field"><label>Subject</label><select id="quizSubject"><option value="All Subjects">All Subjects</option><option>Verbal Ability</option><option>Numerical Ability</option><option>Analytical Ability</option><option>General Information</option><option>Clerical Operations</option></select></div><div class="field"><label>Number of questions</label><select id="quizCount"><option>5</option><option selected>10</option><option>20</option><option>30</option><option>50</option></select></div></div><button class="btn" onclick="startQuiz('Practice')">Start quiz</button></div>
+
+      <div id="quizArea" class="card hidden"></div>
+
+    </section>
+
+
+
+    <section class="page" id="page-mock">
+
+      <div class="card"><h2>Timed mock examination</h2><p class="muted">This mock uses questions you have saved in your question bank. Add questions or generate them from uploaded materials first.</p>
+
+        <div class="row"><div class="field"><label>Question count</label><select id="mockCount"><option>10</option><option>20</option><option>50</option><option>100</option></select></div><div class="field"><label>Time limit</label><select id="mockMinutes"><option value="10">10 minutes</option><option value="30" selected>30 minutes</option><option value="60">60 minutes</option><option value="120">120 minutes</option></select></div></div>
+
+        <button class="btn" onclick="startQuiz('Mock Exam')">Start timed mock</button>
+
+      </div><div id="mockArea" class="card hidden"></div>
+
+    </section>
+
+
+
+    <section class="page" id="page-dictionary">
+
+      <div class="card"><h2>Dictionary, synonyms & antonyms</h2><p class="muted small">Enter an English word. AI lookup requires the GEMINI_API_KEY Script Property.</p>
+
+        <div class="row"><div class="field"><label>Word</label><input id="dictWord" placeholder="e.g. diligent" onkeydown="if(event.key==='Enter')lookupWord()"></div><div class="field" style="flex:0 0 auto;align-self:end"><button class="btn" onclick="lookupWord()">Look up</button></div></div><div id="dictResult"></div>
+
+      </div>
+
+      <div class="card"><h2>My saved vocabulary</h2><div id="vocabList" class="list"></div></div>
+
+    </section>
+
+
+
+    <section class="page" id="page-progress">
+
+      <div class="grid"><div class="card"><div class="muted">Attempts</div><div class="stat" id="progressAttempts">0</div></div><div class="card"><div class="muted">Average score</div><div class="stat" id="progressAverage">0%</div></div><div class="card"><div class="muted">Questions answered</div><div class="stat" id="progressAnswered">0</div></div></div>
+
+      <div class="card"><h2>Attempt history</h2><div id="attemptList" class="list"></div></div>
+
+    </section>
+
+
+
+    <section class="page" id="page-saved">
+
+      <div class="card"><h2>Question bank / saved questions</h2><div class="actions" style="margin-bottom:14px"><button class="btn" onclick="openQuestionForm()">＋ Add question manually</button></div><div id="questionsList" class="list"></div></div>
+
+      <div class="card hidden" id="questionForm"><h2 id="questionFormTitle">Add question</h2><input type="hidden" id="qId">
+
+        <div class="row"><div class="field"><label>Subject</label><select id="qSubject"><option>Verbal Ability</option><option>Numerical Ability</option><option>Analytical Ability</option><option>General Information</option><option>Clerical Operations</option><option>Other</option></select></div><div class="field"><label>Difficulty</label><select id="qDifficulty"><option>Easy</option><option selected>Medium</option><option>Hard</option></select></div></div>
+
+        <div class="field"><label>Topic</label><input id="qTopic"></div><div class="field"><label>Question</label><textarea id="qQuestion"></textarea></div>
+
+        <div class="row"><div class="field"><label>Option A</label><input id="qA"></div><div class="field"><label>Option B</label><input id="qB"></div></div><div class="row"><div class="field"><label>Option C</label><input id="qC"></div><div class="field"><label>Option D</label><input id="qD"></div></div>
+
+        <div class="row"><div class="field"><label>Correct answer</label><select id="qCorrect"><option>A</option><option>B</option><option>C</option><option>D</option></select></div><div class="field"><label>Explanation</label><input id="qExplanation"></div></div>
+
+        <div class="actions"><button class="btn" onclick="saveQuestionForm()">Save question</button><button class="btn secondary" onclick="document.getElementById('questionForm').classList.add('hidden')">Cancel</button></div>
+
+      </div>
+
+    </section>
+
+    <div class="footer">Personal study tool · Always verify generated content against trusted study materials.</div>
+
   </main>
+
+</div>
+
+<script>
+
+  const state = {materials:[],questions:[],attempts:[],vocabulary:[],activeMaterial:null,quiz:[],answers:{},quizMode:'Practice',startedAt:0,timer:null,secondsLeft:0};
+
+  const $ = id => document.getElementById(id);
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function notice(message, error=false){const el=$('globalNotice');el.textContent=message;el.classList.remove('hidden','error');if(error)el.classList.add('error');window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>el.classList.add('hidden'),9000)}
+
+  function callServer(name,args,onSuccess,onFailure){
+
+    const runner=google.script.run
+
+      .withSuccessHandler(onSuccess||(()=>{}))
+
+      .withFailureHandler(e=>{
+
+        if(typeof onFailure==='function'){onFailure(e);return}
+
+        notice(e&&e.message?e.message:String(e),true)
+
+      });
+
+    runner[name](...(args||[]))
+
+  }
+
+  function showPage(page){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));const labels={dashboard:'Dashboard',reviewers:'My Reviewers','upload':'Upload & Scan',quiz:'Practice Quiz',mock:'Mock Exam',dictionary:'Dictionary',progress:'My Progress',saved:'Saved Questions'};$('pageTitle').textContent=labels[page]||'Reviewer';if(page==='reviewers')renderMaterials();if(page==='saved')renderQuestions();if(page==='dictionary')renderVocabulary();if(page==='progress')renderProgress();if(page==='dashboard')renderDashboard();if(page==='quiz'||page==='mock'){}}
+
+  // Event delegation avoids broken tab navigation from fragile inline selectors.
+
+  $('nav').addEventListener('click', e=>{const btn=e.target.closest('button[data-page]');if(btn)showPage(btn.dataset.page)});
+
+  function refreshData(){callServer('getAppData',[],data=>{Object.assign(state,data);renderAll();notice('Your data is up to date.')})}
+
+  function renderAll(){renderDashboard();renderMaterials();renderQuestions();renderProgress();renderVocabulary()}
+
+  function renderDashboard(){$('statMaterials').textContent=state.materials.length;$('statQuestions').textContent=state.questions.length;$('statAttempts').textContent=state.attempts.length;const list=$('recentAttempts');list.innerHTML=state.attempts.slice(0,5).map(a=>`<div class="item"><div class="item-head"><div><h3>${esc(a.mode)} · ${esc(a.subject)}</h3><div class="muted small">${esc(new Date(a.createdAt).toLocaleString())}</div></div><span class="pill">${Number(a.total)?Math.round(Number(a.score)/Number(a.total)*100):0}%</span></div><div class="small">${esc(a.score)} / ${esc(a.total)} correct</div></div>`).join('')||'<div class="empty">No attempts yet. Start a quiz when your question bank is ready.</div>'}
+
+  function renderMaterials(){const list=$('materialsList');list.innerHTML=state.materials.map(m=>`<div class="item"><div class="item-head"><div><h3>${esc(m.title||m.fileName)}</h3><div class="muted small">${esc(m.subject)}${m.topic?' · '+esc(m.topic):''}</div><div class="muted small">${esc(m.fileName||'Manual text')} · ${String(m.extractedText||'').length} characters</div></div><button class="btn secondary" onclick="editMaterial('${esc(m.id)}')">Open / edit</button></div></div>`).join('')||'<div class="empty">No reviewers yet. Upload a file or paste your notes.</div>'}
+
+  function saveManualMaterial(){const title=$('manualTitle').value.trim(),text=$('manualText').value.trim();if(!title||!text){notice('Enter a title and reviewer text.',true);return}const m={id:'manual-'+Date.now(),title,subject:$('manualSubject').value,topic:$('manualTopic').value,extractedText:text,fileName:'Manual entry',mimeType:'text/plain',driveFileId:'',notes:'Manually entered'};state.materials.unshift(m); // Use backend upload-free endpoint below
+
+    callServer('saveManualMaterial',[m],saved=>{state.materials=state.materials.filter(x=>x.id!==m.id);state.materials.unshift(saved);renderMaterials();renderDashboard();$('manualTitle').value='';$('manualTopic').value='';$('manualText').value='';notice('Reviewer saved.')})}
+
+  function editMaterial(id){const m=state.materials.find(x=>String(x.id)===String(id));if(!m)return;state.activeMaterial=m;$('materialEditor').classList.remove('hidden');$('editMaterialId').value=m.id;$('editMaterialTitle').value=m.title||'';$('editMaterialSubject').value=m.subject||'';$('editMaterialTopic').value=m.topic||'';$('editMaterialText').value=m.extractedText||'';$('generateStatus').innerHTML='';$('materialEditor').scrollIntoView({behavior:'smooth'})}
+
+  function saveMaterialEdit(){const p={id:$('editMaterialId').value,title:$('editMaterialTitle').value,subject:$('editMaterialSubject').value,topic:$('editMaterialTopic').value,extractedText:$('editMaterialText').value,notes:''};callServer('saveMaterial',[p],()=>{Object.assign(state.materials.find(m=>String(m.id)===String(p.id)),p);renderMaterials();notice('Reviewer updated.')})}
+
+  function removeMaterial(){const id=$('editMaterialId').value;if(!confirm('Delete this reviewer and its uploaded Drive file?'))return;callServer('deleteMaterial',[id],()=>{state.materials=state.materials.filter(m=>String(m.id)!==String(id));$('materialEditor').classList.add('hidden');renderMaterials();renderDashboard();notice('Reviewer deleted.')})}
+
+  function generateForMaterial(){const id=$('editMaterialId').value;$('generateStatus').innerHTML='<div class="notice">Generating questions from the text. Please wait…</div>';callServer('generateQuestionsFromMaterial',[id,10,'Mixed'],res=>{state.questions=state.questions.concat(res.questions||[]);renderQuestions();renderDashboard();$('generateStatus').innerHTML=`<div class="notice">Created ${res.count} questions. Review them in Saved Questions.</div>`})}
+
+  $('uploadForm').addEventListener('submit',e=>{
+
+    e.preventDefault();
+
+    const file=$('uploadFile').files[0];
+
+    if(!file)return;
+
+    const btn=$('uploadBtn');
+
+    btn.disabled=true;
+
+    btn.textContent='Uploading…';
+
+    $('uploadStatus').innerHTML='<div class="notice">Uploading file and extracting text. Please wait…</div>';
+
+    const reader=new FileReader();
+
+    reader.onload=()=>{
+
+      const base64=reader.result.split(',')[1];
+
+      const payload={fileName:file.name,mimeType:file.type||'application/octet-stream',base64,title:$('uploadTitle').value.trim(),subject:$('uploadSubject').value,topic:$('uploadTopic').value.trim()};
+
+      callServer('uploadMaterial',[payload],res=>{
+
+        btn.disabled=false;
+
+        btn.textContent='Upload and scan';
+
+        if(res && res.material){
+
+          state.materials=state.materials.filter(m=>String(m.id)!==String(res.material.id));
+
+          state.materials.unshift(res.material);
+
+          renderMaterials();
+
+          renderDashboard();
+
+          $('uploadStatus').innerHTML=`<div class="notice">${esc(res.extractionMessage||'Upload complete. Open My Reviewers to check extracted text.')}</div><button class="btn secondary" onclick="showPage('reviewers');editMaterial('${esc(res.material.id)}')">Review extracted text</button>`;
+
+          $('uploadForm').reset();
+
+        } else {
+
+          $('uploadStatus').innerHTML='<div class="notice error">The server returned no material record. Refresh and check My Reviewers.</div>';
+
+          refreshData();
+
+        }
+
+      },err=>{
+
+        btn.disabled=false;
+
+        btn.textContent='Upload and scan';
+
+        const message=err&&err.message?err.message:String(err||'Unknown error');
+
+        $('uploadStatus').innerHTML=`<div class="notice error">The request failed: ${esc(message)}<br><br>The file may already be saved. Refresh and check My Reviewers before uploading it again.</div>`;
+
+        refreshData();
+
+      });
+
+    };
+
+    reader.onerror=()=>{
+
+      btn.disabled=false;
+
+      btn.textContent='Upload and scan';
+
+      $('uploadStatus').innerHTML='<div class="notice error">Could not read the selected file. Please choose it again.</div>';
+
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
+  function renderQuestions(){const list=$('questionsList');list.innerHTML=state.questions.map(q=>`<div class="item"><div class="item-head"><div><h3>${esc(q.question)}</h3><div class="muted small">${esc(q.subject)} · ${esc(q.topic)} · ${esc(q.difficulty)}</div><div class="small">Answer: ${esc(q.correctAnswer)} — ${esc(q.explanation||'No explanation added')}</div></div><div class="actions"><button class="btn secondary" onclick="editQuestion('${esc(q.id)}')">Edit</button><button class="btn danger" onclick="removeQuestion('${esc(q.id)}')">Delete</button></div></div></div>`).join('')||'<div class="empty">No questions saved yet. Add a question manually or generate questions from a reviewer.</div>'}
+
+  function openQuestionForm(){['qId','qTopic','qQuestion','qA','qB','qC','qD','qExplanation'].forEach(id=>$(id).value='');$('questionFormTitle').textContent='Add question';$('questionForm').classList.remove('hidden');$('questionForm').scrollIntoView({behavior:'smooth'})}
+
+  function editQuestion(id){const q=state.questions.find(x=>String(x.id)===String(id));if(!q)return;$('qId').value=q.id;$('qSubject').value=q.subject;$('qDifficulty').value=q.difficulty;$('qTopic').value=q.topic;$('qQuestion').value=q.question;$('qA').value=q.optionA;$('qB').value=q.optionB;$('qC').value=q.optionC;$('qD').value=q.optionD;$('qCorrect').value=q.correctAnswer;$('qExplanation').value=q.explanation;$('questionFormTitle').textContent='Edit question';$('questionForm').classList.remove('hidden');$('questionForm').scrollIntoView({behavior:'smooth'})}
+
+  function saveQuestionForm(){const q={id:$('qId').value||undefined,subject:$('qSubject').value,difficulty:$('qDifficulty').value,topic:$('qTopic').value,question:$('qQuestion').value,optionA:$('qA').value,optionB:$('qB').value,optionC:$('qC').value,optionD:$('qD').value,correctAnswer:$('qCorrect').value,explanation:$('qExplanation').value};if(!q.question.trim()){notice('Enter a question.',true);return}callServer('saveQuestion',[q],saved=>{if(q.id)state.questions=state.questions.map(x=>String(x.id)===String(q.id)?saved:x);else state.questions.push(saved);renderQuestions();renderDashboard();$('questionForm').classList.add('hidden');notice('Question saved.')})}
+
+  function removeQuestion(id){if(!confirm('Delete this question?'))return;callServer('deleteQuestion',[id],()=>{state.questions=state.questions.filter(q=>String(q.id)!==String(id));renderQuestions();renderDashboard();notice('Question deleted.')})}
+
+  function startQuiz(mode){const subject=$('quizSubject').value;let count=Number(mode==='Mock Exam'?$('mockCount').value:$('quizCount').value);let pool=state.questions.filter(q=>subject==='All Subjects'||q.subject===subject);if(!pool.length){notice('No questions match this selection. Add questions or generate them from your uploaded reviewers.',true);return}pool=pool.sort(()=>Math.random()-.5).slice(0,count);state.quiz=pool;state.answers={};state.quizMode=mode;state.startedAt=Date.now();state.secondsLeft=mode==='Mock Exam'?Number($('mockMinutes').value)*60:0;renderQuizArea(mode);if(mode==='Mock Exam')startTimer();showPage(mode==='Mock Exam'?'mock':'quiz')}
+
+  function renderQuizArea(mode){const area=$(mode==='Mock Exam'?'mockArea':'quizArea');area.classList.remove('hidden');area.innerHTML=`<div class="item-head"><div><h2>${esc(mode)}</h2><div class="muted small">${state.quiz.length} questions</div></div><div class="timer" id="quizTimer">${mode==='Mock Exam'?formatTime(state.secondsLeft):'Practice mode'}</div></div><div id="quizQuestions"></div><button class="btn" onclick="submitQuiz()">Submit answers</button>`;const qWrap=area.querySelector('#quizQuestions');qWrap.innerHTML=state.quiz.map((q,i)=>`<div class="question" id="question-${i}"><strong>${i+1}. ${esc(q.question)}</strong>${['A','B','C','D'].map(letter=>`<label class="option" id="opt-${i}-${letter}"><input type="radio" name="answer-${i}" value="${letter}" onchange="state.answers[${i}]='${letter}'"><span><b>${letter}.</b> ${esc(q['option'+letter])}</span></label>`).join('')}<div id="explain-${i}" class="answer-explain hidden"></div></div>`).join('')}
+
+  function formatTime(s){const m=Math.floor(Math.max(0,s)/60),sec=Math.max(0,s)%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}
+
+  function startTimer(){clearInterval(state.timer);state.timer=setInterval(()=>{state.secondsLeft--;const el=$('quizTimer');if(el)el.textContent=formatTime(state.secondsLeft);if(state.secondsLeft<=0){clearInterval(state.timer);state.timer=null;submitQuiz(true)}},1000)}
+
+  function submitQuiz(auto=false){if(!state.quiz.length)return;clearInterval(state.timer);state.timer=null;let score=0;state.quiz.forEach((q,i)=>{const chosen=state.answers[i]||'';if(chosen===String(q.correctAnswer).toUpperCase())score++;['A','B','C','D'].forEach(letter=>{const el=$('opt-'+i+'-'+letter);if(!el)return;if(letter===String(q.correctAnswer).toUpperCase())el.classList.add('correct');else if(letter===chosen)el.classList.add('wrong');const radio=el.querySelector('input');if(radio)radio.disabled=true});const ex=$('explain-'+i);ex.classList.remove('hidden');ex.innerHTML=`<b>Correct answer: ${esc(q.correctAnswer)}</b><br>${esc(q.explanation||'No explanation was saved for this question.')}`});const duration=Math.round((Date.now()-state.startedAt)/1000);const payload={mode:state.quizMode,subject:$('quizSubject').value,score,total:state.quiz.length,durationSeconds:duration,answers:state.quiz.map((q,i)=>({questionId:q.id,chosen:state.answers[i]||'',correctAnswer:q.correctAnswer}))};callServer('saveAttempt',[payload],attempt=>{state.attempts.unshift(attempt);renderDashboard();renderProgress()});const area=$(state.quizMode==='Mock Exam'?'mockArea':'quizArea');const result=document.createElement('div');result.className='notice';result.innerHTML=`<b>${auto?'Time is up. ':''}Result: ${score} / ${state.quiz.length} (${Math.round(score/state.quiz.length*100)}%)</b><br>${score===state.quiz.length?'Excellent work!': 'Review the explanations and retry the questions you missed.'}`;area.prepend(result);area.querySelectorAll('button').forEach(b=>b.disabled=true);notice('Your result has been recorded.')}
+
+  function renderProgress(){const total=state.attempts.length;const average=total?Math.round(state.attempts.reduce((s,a)=>s+(Number(a.total)?Number(a.score)/Number(a.total):0),0)/total*100):0;$('progressAttempts').textContent=total;$('progressAverage').textContent=average+'%';$('progressAnswered').textContent=state.attempts.reduce((s,a)=>s+Number(a.total||0),0);$('attemptList').innerHTML=state.attempts.map(a=>`<div class="item"><div class="item-head"><div><h3>${esc(a.mode)} · ${esc(a.subject)}</h3><div class="muted small">${esc(new Date(a.createdAt).toLocaleString())}</div></div><span class="pill">${Number(a.total)?Math.round(Number(a.score)/Number(a.total)*100):0}%</span></div><div class="small">${esc(a.score)} / ${esc(a.total)} · ${Math.round(Number(a.durationSeconds||0)/60)} min</div></div>`).join('')||'<div class="empty">No attempt history yet.</div>'}
+
+  function lookupWord(){const word=$('dictWord').value.trim();if(!word){notice('Enter a word first.',true);return}$('dictResult').innerHTML='<div class="notice">Looking up the word…</div>';callServer('getDictionaryEntry',[word],entry=>{state.vocabulary.unshift(entry);renderVocabulary();$('dictResult').innerHTML=`<div class="item"><h3>${esc(entry.word)} ${entry.pronunciation?'· '+esc(entry.pronunciation):''}</h3><p>${esc(entry.definition)}</p><p><b>Example:</b> ${esc(entry.example)}</p><p><b>Synonyms:</b> ${esc(entry.synonyms)}</p><p><b>Antonyms:</b> ${esc(entry.antonyms||'No common antonym listed')}</p></div>`})}
+
+  function renderVocabulary(){$('vocabList').innerHTML=state.vocabulary.map(v=>`<div class="item"><div class="item-head"><div><h3>${esc(v.word)} ${v.pronunciation?'· '+esc(v.pronunciation):''}</h3><div>${esc(v.definition)}</div><div class="muted small">Synonyms: ${esc(v.synonyms)} · Antonyms: ${esc(v.antonyms)}</div></div><button class="btn danger" onclick="removeVocabulary('${esc(v.id)}')">Delete</button></div></div>`).join('')||'<div class="empty">Your saved vocabulary will appear here.</div>'}
+
+  function removeVocabulary(id){if(!confirm('Delete this vocabulary entry?'))return;callServer('deleteVocabulary',[id],()=>{state.vocabulary=state.vocabulary.filter(v=>String(v.id)!==String(id));renderVocabulary()})}
+
+  // A separate optional AI explanation helper can be wired to a question in a later iteration.
+
+  refreshData();
+
+</script>
+
 </body>
+
 </html>
-```
