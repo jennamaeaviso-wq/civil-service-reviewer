@@ -1,387 +1,785 @@
 /**
+
  * Civil Service Examination Reviewer
+
  * Google Apps Script backend.
+
  *
+
  * Setup:
+
  * 1. Create a Google Sheet and copy its ID into SPREADSHEET_ID below.
+
  * 2. Create a Google Drive folder and copy its ID into DRIVE_FOLDER_ID below.
+
  * 3. In Apps Script > Services, add "Drive API" (Advanced Google service).
+
  * 4. In the linked Google Cloud project, enable Google Drive API.
+
  * 5. Optional AI explanations/question generation: add Script Property GEMINI_API_KEY.
+
  * 6. Deploy as Web app; Execute as Me; choose appropriate access.
+
  */
+
+
 
 const SPREADSHEET_ID = '1M32alkJ2N05J4ZiXgkix1JayTbG4YhQnpCyMCELXCjc';
+
 const DRIVE_FOLDER_ID = '1dHpZROFbNlhsHGoTRbrtp6C0KGtniaOO';
+
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
+
+
 const SHEETS = {
+
   materials: ['id','createdAt','title','subject','topic','fileName','mimeType','driveFileId','extractedText','notes'],
+
   questions: ['id','createdAt','sourceMaterialId','subject','topic','difficulty','question','optionA','optionB','optionC','optionD','correctAnswer','explanation','active'],
+
   attempts: ['id','createdAt','mode','subject','score','total','durationSeconds','answersJson'],
+
   vocabulary: ['id','createdAt','word','definition','example','synonyms','antonyms','pronunciation','favorite']
+
 };
 
+
+
 function doGet() {
+
   setupSheets_();
+
   return HtmlService.createHtmlOutputFromFile('Index')
+
     .setTitle('Civil Service Reviewer')
+
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+
 }
+
+
 
 function include(filename) {
+
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
+
 }
+
+
 
 function setupSheets_() {
+
   const ss = getSpreadsheet_();
+
   Object.keys(SHEETS).forEach(key => {
+
     let sh = ss.getSheetByName(key);
+
     if (!sh) sh = ss.insertSheet(key);
+
     if (sh.getLastRow() === 0) sh.appendRow(SHEETS[key]);
+
     else {
+
       const existing = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0];
+
       if (String(existing[0]) !== SHEETS[key][0]) {
+
         sh.clear();
+
         sh.appendRow(SHEETS[key]);
+
       }
+
     }
+
   });
+
   return true;
+
 }
+
+
 
 function getSpreadsheet_() {
+
   if (!SPREADSHEET_ID || SPREADSHEET_ID.indexOf('PASTE_') === 0) {
+
     throw new Error('Please set SPREADSHEET_ID in Code.gs before using the app.');
+
   }
+
   return SpreadsheetApp.openById(SPREADSHEET_ID);
+
 }
+
+
 
 function getDriveFolder_() {
+
   if (!DRIVE_FOLDER_ID || DRIVE_FOLDER_ID.indexOf('PASTE_') === 0) {
+
     throw new Error('Please set DRIVE_FOLDER_ID in Code.gs before uploading files.');
+
   }
+
   return DriveApp.getFolderById(DRIVE_FOLDER_ID);
+
 }
+
+
 
 function getSheet_(key) {
+
   setupSheets_();
+
   return getSpreadsheet_().getSheetByName(key);
+
 }
+
+
 
 function readObjects_(key) {
+
   const sh = getSheet_(key);
+
   const values = sh.getDataRange().getValues();
+
   if (values.length < 2) return [];
+
   const headers = values[0].map(String);
+
   return values.slice(1).filter(row => row.some(v => v !== '' && v !== null))
+
     .map(row => {
+
       const obj = {};
+
       headers.forEach((h, i) => obj[h] = row[i] instanceof Date ? row[i].toISOString() : row[i]);
+
       return obj;
+
     });
+
 }
+
+
 
 function appendObject_(key, obj) {
+
   const sh = getSheet_(key);
+
   const headers = SHEETS[key];
+
   sh.appendRow(headers.map(h => obj[h] === undefined ? '' : obj[h]));
+
   return obj;
+
 }
+
+
 
 function updateObject_(key, id, updates) {
+
   const sh = getSheet_(key);
+
   const data = sh.getDataRange().getValues();
+
   if (data.length < 2) throw new Error('No records found.');
+
   const headers = data[0].map(String);
+
   const idCol = headers.indexOf('id');
+
   for (let r = 1; r < data.length; r++) {
+
     if (String(data[r][idCol]) === String(id)) {
+
       Object.keys(updates).forEach(k => {
+
         const c = headers.indexOf(k);
+
         if (c >= 0) sh.getRange(r + 1, c + 1).setValue(updates[k]);
+
       });
+
       return true;
+
     }
+
   }
+
   throw new Error('Record not found: ' + id);
+
 }
+
+
 
 function deleteObject_(key, id) {
+
   const sh = getSheet_(key);
+
   const data = sh.getDataRange().getValues();
+
   if (data.length < 2) return false;
+
   const idCol = data[0].map(String).indexOf('id');
+
   for (let r = data.length - 1; r >= 1; r--) {
+
     if (String(data[r][idCol]) === String(id)) {
+
       sh.deleteRow(r + 1);
+
       return true;
+
     }
+
   }
+
   return false;
+
 }
+
+
 
 function makeId_() {
+
   return Utilities.getUuid();
+
 }
+
+
 
 function getAppData() {
+
   setupSheets_();
+
   const materials = readObjects_('materials');
+
   const questions = readObjects_('questions').filter(q => String(q.active).toLowerCase() !== 'false');
+
   const attempts = readObjects_('attempts').sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   const vocabulary = readObjects_('vocabulary').sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
   return {materials, questions, attempts, vocabulary};
+
 }
+
+
 
 /**
+
  * Upload base64 file to Drive, then attempt OCR/text extraction.
+
  * For images/PDF, Drive API OCR is used when the advanced Drive service is enabled.
+
  * DOCX text extraction uses conversion to a temporary Google Doc.
+
  */
+
 function uploadMaterial(payload) {
+
   if (!payload || !payload.fileName || !payload.base64) {
+
     throw new Error('Choose a file first.');
+
   }
+
+
 
   const bytes = Utilities.base64Decode(payload.base64);
+
   const blob = Utilities.newBlob(
+
     bytes,
+
     payload.mimeType || 'application/octet-stream',
+
     payload.fileName
+
   );
+
   const folder = getDriveFolder_();
+
   const file = folder.createFile(blob);
 
+
+
   // Save the file record BEFORE OCR so it remains listed if OCR is slow or times out.
+
   const material = {
+
     id: makeId_(),
+
     createdAt: new Date().toISOString(),
+
     title: payload.title || payload.fileName,
+
     subject: payload.subject || 'Uncategorized',
+
     topic: payload.topic || '',
+
     fileName: payload.fileName,
+
     mimeType: payload.mimeType || '',
+
     driveFileId: file.getId(),
+
     extractedText: '',
+
     notes: 'File uploaded. Text extraction in progress.'
+
   };
+
   appendObject_('materials', material);
 
+
+
   let extracted = '';
+
   let extractionMessage = '';
 
+
+
   try {
+
     const mime = String(payload.mimeType || '').toLowerCase();
+
     if (mime.indexOf('image/') === 0 || mime === 'application/pdf') {
+
       extracted = ocrWithDriveApi_(file.getId(), payload.fileName, mime);
+
     } else if (mime.indexOf('wordprocessingml') >= 0 || /\.docx?$/i.test(payload.fileName)) {
+
       extracted = extractDocxText_(file.getId(), payload.fileName);
+
     } else if (mime.indexOf('text/') === 0 || /\.txt$/i.test(payload.fileName)) {
+
       extracted = blob.getDataAsString();
+
     } else {
+
       extractionMessage = 'File uploaded. Text extraction may not be supported for this file type; paste or enter the text below.';
+
     }
+
   } catch (err) {
+
     extractionMessage = 'File uploaded, but automatic text extraction failed. Check Drive API setup or paste the text manually. Details: ' + (err && err.message ? err.message : String(err));
+
   }
+
+
 
   if (!extractionMessage) {
+
     extractionMessage = extracted
+
       ? 'Upload and text extraction complete.'
+
       : 'File uploaded, but no text was extracted. You can paste or enter the text manually.';
+
   }
+
+
 
   // Update the already-saved row with the extraction result.
+
   updateObject_('materials', material.id, {
+
     extractedText: extracted || '',
+
     notes: extractionMessage
+
   });
+
   material.extractedText = extracted || '';
+
   material.notes = extractionMessage;
 
+
+
   return { material: material, extractionMessage: extractionMessage };
+
 }
+
+
 
 function ocrWithDriveApi_(fileId, fileName, mimeType) {
+
   if (typeof Drive === 'undefined' || !Drive.Files) {
+
     throw new Error('Advanced Drive service is not enabled. Add Drive API under Apps Script Services.');
+
   }
+
   const sourceBlob = DriveApp.getFileById(fileId).getBlob();
+
   const resource = {name: 'OCR - ' + fileName, mimeType: MimeType.GOOGLE_DOCS};
+
   // Drive API v3: create a Google Doc from the image/PDF upload.
+
   // Google Drive performs OCR during the import when supported.
+
   const converted = Drive.Files.create(resource, sourceBlob, {fields: 'id,name'});
+
   const docId = converted.id;
+
   try {
+
     const text = DocumentApp.openById(docId).getBody().getText();
+
     DriveApp.getFileById(docId).setTrashed(true);
+
     return text || '';
+
   } catch (e) {
+
     try { DriveApp.getFileById(docId).setTrashed(true); } catch (_) {}
+
     throw e;
+
   }
+
 }
+
+
 
 function extractDocxText_(fileId, fileName) {
+
   if (typeof Drive === 'undefined' || !Drive.Files) {
+
     throw new Error('Advanced Drive service is not enabled. Add Drive API under Apps Script Services.');
+
   }
+
   const blob = DriveApp.getFileById(fileId).getBlob();
+
   const converted = Drive.Files.create({name: 'TEMP - ' + fileName, mimeType: MimeType.GOOGLE_DOCS}, blob, {fields: 'id,name'});
+
   const docId = converted.id;
+
   try {
+
     const text = DocumentApp.openById(docId).getBody().getText();
+
     DriveApp.getFileById(docId).setTrashed(true);
+
     return text || '';
+
   } catch (e) {
+
     try { DriveApp.getFileById(docId).setTrashed(true); } catch (_) {}
+
     throw e;
+
   }
+
 }
+
+
 
 function saveMaterial(payload) {
+
   if (!payload || !payload.id) throw new Error('Missing material ID.');
+
   updateObject_('materials', payload.id, {
+
     title: payload.title || '', subject: payload.subject || 'Uncategorized',
+
     topic: payload.topic || '', extractedText: payload.extractedText || '', notes: payload.notes || ''
+
   });
+
   return true;
+
 }
+
+
 
 function deleteMaterial(id) {
+
   const items = readObjects_('materials');
+
   const item = items.find(x => String(x.id) === String(id));
+
   if (item && item.driveFileId) {
+
     try { DriveApp.getFileById(item.driveFileId).setTrashed(true); } catch (e) {}
+
   }
+
   deleteObject_('materials', id);
+
   return true;
+
 }
 
+
+
 function saveQuestion(q) {
+
   if (!q) throw new Error('Question data is required.');
+
   const obj = {
+
     id: q.id || makeId_(), createdAt: q.createdAt || new Date().toISOString(),
+
     sourceMaterialId: q.sourceMaterialId || '', subject: q.subject || 'General',
+
     topic: q.topic || '', difficulty: q.difficulty || 'Medium', question: q.question || '',
+
     optionA: q.optionA || '', optionB: q.optionB || '', optionC: q.optionC || '',
+
     optionD: q.optionD || '', correctAnswer: String(q.correctAnswer || 'A').toUpperCase(),
+
     explanation: q.explanation || '', active: true
+
   };
+
   if (!obj.question.trim()) throw new Error('Enter a question.');
+
   if (q.id) updateObject_('questions', q.id, obj);
+
   else appendObject_('questions', obj);
+
   return obj;
+
 }
+
+
 
 function deleteQuestion(id) { return deleteObject_('questions', id); }
 
+
+
 function generateQuestionsFromMaterial(materialId, count, difficulty) {
+
   const material = readObjects_('materials').find(m => String(m.id) === String(materialId));
+
   if (!material) throw new Error('Material not found.');
+
   const text = String(material.extractedText || '').trim();
+
   if (text.length < 30) throw new Error('The extracted text is too short. Edit or paste more text into the material first.');
+
   const n = Math.max(1, Math.min(50, Number(count) || 10));
+
   const prompt = [
+
     'Create multiple-choice practice questions for a Philippine Civil Service Examination reviewer.',
+
     'Use ONLY the supplied source text; do not invent facts. If the source is insufficient, create fewer questions.',
+
     'Return valid JSON only: {"questions":[{"question":"...","optionA":"...","optionB":"...","optionC":"...","optionD":"...","correctAnswer":"A","explanation":"Explain why the answer is correct and briefly why the other options are incorrect.","topic":"..."}]}',
+
     'Create up to ' + n + ' questions. Difficulty: ' + (difficulty || 'Mixed') + '.',
+
     'Every question must have four plausible options and exactly one correct answer. correctAnswer must be A, B, C, or D.',
+
     'SOURCE TITLE: ' + material.title + '\nSUBJECT: ' + material.subject + '\nTOPIC: ' + material.topic + '\nSOURCE TEXT:\n' + text.slice(0, 18000)
+
   ].join('\n\n');
+
   const response = callGemini_(prompt);
+
   const parsed = parseJsonResponse_(response);
+
   const generated = (parsed.questions || []).slice(0, n).map(q => saveQuestion({
+
     sourceMaterialId: material.id, subject: material.subject, topic: q.topic || material.topic,
+
     difficulty: difficulty || 'Mixed', question: q.question, optionA: q.optionA,
+
     optionB: q.optionB, optionC: q.optionC, optionD: q.optionD,
+
     correctAnswer: q.correctAnswer, explanation: q.explanation
+
   }));
+
   return {count: generated.length, questions: generated};
+
 }
+
+
 
 function explainQuestion(payload) {
+
   const prompt = 'You are a careful Civil Service Examination tutor. Explain the correct answer in simple language. State why the correct option is correct and briefly explain why each other option is incorrect. Do not claim official status. If information is missing, say so.\n\nQuestion: ' + payload.question +
+
     '\nA. ' + payload.optionA + '\nB. ' + payload.optionB + '\nC. ' + payload.optionC + '\nD. ' + payload.optionD +
+
     '\nCorrect answer: ' + payload.correctAnswer + '\nExisting explanation: ' + (payload.explanation || '(none)');
+
   return callGemini_(prompt);
+
 }
+
+
 
 function callGemini_(prompt) {
+
   const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+
   if (!key) throw new Error('AI is not configured. Add GEMINI_API_KEY in Apps Script > Project Settings > Script Properties.');
+
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(key);
+
   const response = UrlFetchApp.fetch(url, {
+
     method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+
     payload: JSON.stringify({contents: [{parts: [{text: prompt}]}], generationConfig: {temperature: 0.25, responseMimeType: 'application/json'}})
+
   });
+
   const status = response.getResponseCode();
+
   const body = response.getContentText();
+
   if (status < 200 || status >= 300) throw new Error('AI request failed (' + status + '): ' + body.slice(0, 500));
+
   const json = JSON.parse(body);
+
   return (((json.candidates || [])[0] || {}).content || {}).parts?.map(p => p.text || '').join('\n') || '';
+
 }
+
+
 
 function parseJsonResponse_(text) {
+
   const cleaned = String(text || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+
   try { return JSON.parse(cleaned); } catch (e) {
+
     const start = cleaned.indexOf('{'), end = cleaned.lastIndexOf('}');
+
     if (start >= 0 && end > start) return JSON.parse(cleaned.slice(start, end + 1));
+
     throw new Error('AI returned invalid JSON. Try again or create questions manually.');
+
   }
+
 }
+
+
 
 function saveAttempt(payload) {
+
   const obj = {
+
     id: makeId_(), createdAt: new Date().toISOString(), mode: payload.mode || 'Practice',
+
     subject: payload.subject || 'All Subjects', score: Number(payload.score) || 0,
+
     total: Number(payload.total) || 0, durationSeconds: Number(payload.durationSeconds) || 0,
+
     answersJson: JSON.stringify(payload.answers || [])
+
   };
+
   appendObject_('attempts', obj);
+
   return obj;
+
 }
+
+
 
 function saveVocabulary(item) {
+
   const obj = {
+
     id: item.id || makeId_(), createdAt: item.createdAt || new Date().toISOString(),
+
     word: String(item.word || '').trim(), definition: item.definition || '',
+
     example: item.example || '', synonyms: item.synonyms || '', antonyms: item.antonyms || '',
+
     pronunciation: item.pronunciation || '', favorite: item.favorite === true || String(item.favorite) === 'true'
+
   };
+
   if (!obj.word) throw new Error('Enter a word.');
+
   if (item.id) updateObject_('vocabulary', item.id, obj); else appendObject_('vocabulary', obj);
+
   return obj;
+
 }
+
 function deleteVocabulary(id) { return deleteObject_('vocabulary', id); }
 
+
+
 function getDictionaryEntry(word) {
+
   const key = PropertiesService.getScriptProperties().getProperty('GEMINI_API_KEY');
+
   const prompt = 'Give a learner-friendly dictionary entry for the English word "' + String(word || '').slice(0,100) + '". Return valid JSON only with fields: word, pronunciation, definition (simple), example (one natural sentence), synonyms (array of 3-6), antonyms (array of 2-5 or empty array if none). Do not invent an antonym if none exists.';
+
   const parsed = parseJsonResponse_(callGemini_(prompt));
+
   return saveVocabulary({
+
     word: parsed.word || word, pronunciation: parsed.pronunciation || '',
+
     definition: parsed.definition || '', example: parsed.example || '',
+
     synonyms: Array.isArray(parsed.synonyms) ? parsed.synonyms.join(', ') : (parsed.synonyms || ''),
+
     antonyms: Array.isArray(parsed.antonyms) ? parsed.antonyms.join(', ') : (parsed.antonyms || '')
+
   });
+
 }
+
+
+
 
 
 function saveManualMaterial(payload) {
+
   if (!payload || !String(payload.title || '').trim()) throw new Error('Enter a title.');
+
   const obj = {
+
     id: makeId_(), createdAt: new Date().toISOString(),
+
     title: String(payload.title).trim(), subject: payload.subject || 'Uncategorized',
+
     topic: payload.topic || '', fileName: 'Manual entry', mimeType: 'text/plain',
+
     driveFileId: '', extractedText: String(payload.extractedText || ''), notes: 'Manually entered'
+
   };
+
   appendObject_('materials', obj);
+
   return obj;
+
 }
 
+
+
 function initializeReviewer() {
+
   setupSheets_();
+
+}
+
+
+
+function authorizeDocumentAccess() {
+
+  const doc = DocumentApp.create('Temporary Reviewer Authorization Check');
+
+  DriveApp.getFileById(doc.getId()).setTrashed(true);
+
+  return 'Document access authorized.';
+
 }
