@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#163b70">
-  <meta name="description" content="Civil Service Reviewer study app">
+  <meta name="description" content="Civil Service Reviewer">
   <title>Civil Service Reviewer</title>
 
   <link rel="manifest" href="./manifest.json">
@@ -13,148 +13,60 @@
   <link rel="apple-touch-icon" href="./icon-192.png">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Arial, sans-serif;
-      background: #eef3f9;
-      color: #183153;
       display: grid;
       place-items: center;
-      padding: 24px;
+      background: #eef3f9;
+      color: #183153;
+      font-family: Arial, sans-serif;
+      text-align: center;
     }
 
     main {
-      width: 100%;
-      max-width: 420px;
       padding: 32px 24px;
-      text-align: center;
-      background: white;
-      border-radius: 22px;
-      box-shadow: 0 8px 30px #163b7018;
     }
 
-    .logo {
-      width: 112px;
-      height: 112px;
+    img {
+      width: 100px;
+      height: 100px;
       object-fit: contain;
-      margin-bottom: 12px;
-    }
-
-    h1 {
-      font-size: 25px;
-      margin: 8px 0 16px;
     }
 
     p {
-      line-height: 1.6;
       color: #58677b;
     }
 
-    a, button {
-      display: block;
-      width: 100%;
-      padding: 15px;
-      margin-top: 14px;
-      border: 0;
+    a {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 14px 24px;
       border-radius: 12px;
-      font-size: 16px;
-      font-weight: bold;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    .open {
       background: #163b70;
       color: white;
-    }
-
-    .install {
-      background: #e4edf9;
-      color: #163b70;
-    }
-
-    #status {
-      font-size: 13px;
+      text-decoration: none;
+      font-weight: bold;
     }
   </style>
 </head>
-
 <body>
   <main>
-    <img
-      class="logo"
-      src="./icon-192.png"
-      alt="Civil Service Reviewer icon"
-    >
-
-    <h1>Civil Service Reviewer</h1>
-
-    <p>
-      Prepare for your Civil Service Examination anytime
-      using your phone or tablet.
-    </p>
-
-    <a
-      class="open"
-      href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec"
-    >
+    <img src="./icon-192.png" alt="Civil Service Reviewer">
+    <h2>Opening Civil Service Reviewer...</h2>
+    <p>Please wait while the reviewer loads.</p>
+    <a id="open" href="https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec">
       Open Reviewer
     </a>
-
-    <button id="install" class="install" hidden>
-      Install App
-    </button>
-
-    <p id="status">
-      Open the reviewer using the button above.
-    </p>
   </main>
 
   <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js")
-          .catch(error => console.error(
-            "Service worker registration failed:", error
-          ));
-      });
-    }
+    const reviewerURL =
+      "https://script.google.com/macros/s/AKfycbw0wAJob-tbYyLYIuEhH1IdBc2Rjw_bxQ9hgAzHhFXbe4kK57QJ_POHQgJERuOSpAh9/exec";
 
-    let installPrompt = null;
+    document.getElementById("open").href = reviewerURL;
 
-    const installButton = document.getElementById("install");
-    const status = document.getElementById("status");
-
-    window.addEventListener("beforeinstallprompt", event => {
-      event.preventDefault();
-      installPrompt = event;
-      installButton.hidden = false;
-      status.textContent = "Your app is ready to install.";
-    });
-
-    installButton.addEventListener("click", async () => {
-      if (!installPrompt) {
-        status.textContent =
-          "Use Chrome menu and select Install app if available.";
-        return;
-      }
-
-      installPrompt.prompt();
-      await installPrompt.userChoice;
-
-      installPrompt = null;
-      installButton.hidden = true;
-    });
-
-    window.addEventListener("appinstalled", () => {
-      installButton.hidden = true;
-      status.textContent = "App installed successfully.";
-    });
+    window.location.replace(reviewerURL);
   </script>
 </body>
 </html>
