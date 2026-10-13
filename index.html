@@ -4,13 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#163b70">
+  <meta name="theme-color" content="#0645AD">
   <meta name="description" content="Civil Service Reviewer study app">
   <title>Civil Service Reviewer</title>
+
   <link rel="manifest" href="./manifest.json">
-  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="icon" href="./icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -21,6 +25,7 @@
       background: #eef3f9;
       color: #183153;
     }
+
     main {
       width: 100%;
       max-width: 420px;
@@ -30,13 +35,17 @@
       border-radius: 22px;
       box-shadow: 0 8px 30px #163b7018;
     }
+
     .logo {
       width: 96px;
       height: 96px;
       margin-bottom: 12px;
+      object-fit: contain;
     }
+
     h1 { font-size: 25px; margin: 8px 0; }
     p { line-height: 1.6; color: #58677b; }
+
     a, button {
       display: block;
       width: 100%;
@@ -49,20 +58,27 @@
       text-decoration: none;
       cursor: pointer;
     }
+
     .open {
-      background: #163b70;
+      background: #0645AD;
       color: white;
     }
+
     .install {
       background: #e4edf9;
-      color: #163b70;
+      color: #0645AD;
     }
+
     #status { font-size: 13px; }
   </style>
 </head>
+
 <body>
   <main>
-    <img class="logo" src="./icon.svg" alt="Civil Service Reviewer icon">
+    <img class="logo"
+         src="./icon-512.png"
+         alt="Civil Service Reviewer icon">
+
     <h1>Civil Service Reviewer</h1>
     <p>Prepare for your Civil Service Examination anytime using your phone or tablet.</p>
 
@@ -86,7 +102,8 @@
       });
     }
 
-    let installPrompt;
+    let installPrompt = null;
+
     const installButton = document.getElementById("install");
     const status = document.getElementById("status");
 
@@ -98,7 +115,12 @@
     });
 
     installButton.addEventListener("click", async () => {
-      if (!installPrompt) return;
+      if (!installPrompt) {
+        status.textContent =
+          "Please use Chrome menu and choose Install app.";
+        return;
+      }
+
       installPrompt.prompt();
       await installPrompt.userChoice;
       installPrompt = null;
